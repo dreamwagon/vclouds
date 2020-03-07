@@ -1,0 +1,53 @@
+MaterialDef Clouds {
+
+    MaterialParameters {
+    	Texture3D CloudShapeNoise -LINEAR
+    	Texture3D CloudErosionNoise -LINEAR
+    	Texture2D Curl -LINEAR
+    	Texture2D WeatherMap -LINEAR
+
+    	Float PlanetRadius
+    	Float SkyRadius
+        Float CloudsFrom
+        Float CloudsTo
+        
+        Vector3 SunColor
+        
+        Vector3 CameraDir
+        Vector3 LightDir
+        
+        Int RayMarchSteps
+        Int AtmosphereLevels
+        FloatArray AtmosphereLevelAltitudes
+        FloatArray AtmosphereLevelHeights
+        Float CloudCoverage
+        Float WindSpeed
+        Float WeatherMapWindFactor
+        Vector3 WindDirection
+        Vector3 WindTurbulanceFactor
+        
+        Float HorizonViewThreshold
+        Boolean DetailedEdges
+        Float DetailedEdgeThreshold
+ 
+    }
+
+    Technique {
+
+        VertexShader GLSL130:   MatDefs/Clouds/Clouds.vert
+        FragmentShader GLSL130: MatDefs/Clouds/Clouds.frag
+
+        WorldParameters {
+        	CameraPosition
+        	CameraDirection
+        	LightDirection
+			ViewMatrix
+            Time
+        }
+
+        Defines {
+        
+        }
+    }
+
+}

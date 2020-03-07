@@ -1,0 +1,43 @@
+MaterialDef Sky {
+
+    MaterialParameters {
+        Texture3D CloudShapeNoise
+        Texture2D WeatherMap
+        Vector3 CameraPos
+        Vector3 CameraDir
+        Vector3 LightDir
+        
+        Float SkyRadius
+        
+        Color SunColor
+        Color AmbientColor
+        
+        Color SkyBottomColor
+        Color SkyTopColor
+        
+        Float PlanetRadius
+    	Float SkyRadius
+        Float CloudsFrom
+        Float CloudsTo
+    }
+
+    Technique {
+
+        VertexShader GLSL130:   MatDefs/Sky/Sky.vert
+        FragmentShader GLSL130: MatDefs/Sky/Sky.frag
+
+        WorldParameters {
+        	LightDirection
+        	CameraPosition
+			ViewMatrix
+			ProjectionMatrix
+            WorldViewProjectionMatrix
+            Time
+        }
+
+        Defines {
+            HDR_ENABLED : HDR
+        }
+    }
+
+}
