@@ -8,14 +8,12 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FXAAFilter;
 import com.jme3.scene.Node;
-import com.jme3.terrain.geomipmap.TerrainQuad;
 
 /**
  * 
@@ -25,13 +23,6 @@ import com.jme3.terrain.geomipmap.TerrainQuad;
 public class VCloudsApp extends SimpleApplication {
 
     private Vector3f lightDir = new Vector3f(-1,0.1f,1).normalizeLocal();
-
-    TerrainQuad terrain;
-    Material matRock;
-    //AudioNode waves;
-    //LowPassFilter underWaterAudioFilter = new LowPassFilter(0.5f, 0.1f);
-    //LowPassFilter underWaterReverbFilter = new LowPassFilter(0.5f, 0.1f);
-    //LowPassFilter aboveWaterAudioFilter = new LowPassFilter(1, 1);
 
     VClouds cloudProcessor;
     
@@ -63,24 +54,13 @@ public class VCloudsApp extends SimpleApplication {
         
         flyCam.setMoveSpeed(250);
 
-        //cam.setLocation(new Vector3f(-700, 100, 300));
-        //cam.setRotation(new Quaternion().fromAngleAxis(0.5f, Vector3f.UNIT_Z));
-//        cam.setLocation(new Vector3f(-327.21957f, 61.6459f, 126.884346f));
-//        cam.setRotation(new Quaternion(0.052168474f, 0.9443102f, -0.18395276f, 0.2678024f));
-
-
         cam.setLocation(new Vector3f(-370.31592f, 182.04016f, 196.81192f));
         cam.setRotation(new Quaternion(0.015302252f, 0.9304095f, -0.039101653f, 0.3641086f));
 
 
         cloudProcessor= new VClouds(assetManager, cam);
         getViewPort().addProcessor(cloudProcessor);
-        
-        
-        cam.setFrustumFar(400000);
-
-        
-        
+         
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
         fpp.addFilter(new FXAAFilter());
         
@@ -91,6 +71,19 @@ public class VCloudsApp extends SimpleApplication {
         }
         viewPort.addProcessor(fpp);
 
+		key(KeyInput.KEY_1, new AnalogListener() {
+			@Override
+			public void onAnalog(String name, float value, float tpf) {
+            	lightDir.y -=.01f;
+			}
+		});	
+		key(KeyInput.KEY_2, new AnalogListener() {
+			@Override
+			public void onAnalog(String name, float value, float tpf) {
+				lightDir.y +=.01f;
+			}
+		});	
+		
 		key(KeyInput.KEY_8, new AnalogListener() {
 			@Override
 			public void onAnalog(String name, float value, float tpf) {
@@ -107,9 +100,7 @@ public class VCloudsApp extends SimpleApplication {
             	}
 			}
 		});	
-		
     }
-
 
     private void createTerrain(Node rootNode) {
     	//Create some terrain

@@ -3,12 +3,12 @@
 uniform sampler3D m_CloudShapeNoise;
 uniform sampler3D m_CloudErosionNoise;
 uniform sampler2D m_WeatherMap;
-uniform sampler2D m_CloudPathLut;
-uniform sampler2D m_TransmittanceLut;
 uniform sampler2D m_Curl;
 
 //Sky
+uniform sampler2D m_SkyColor;
 uniform vec3 m_SunColor;
+uniform vec3 m_AmbientColor;
 
 //Weather
 uniform float m_WindSpeed;
@@ -41,6 +41,7 @@ uniform vec3 g_CameraDirection;
 uniform float g_Time; //total time
 
 in vec3 pos;
+in vec2 fpPos;
 
 varying float time;
 varying vec3 norm;
@@ -253,7 +254,7 @@ void main() {
 					lightPoint += (lightDir+(noiseKernel[j]*float(j+1))*lStepSize);
 
 					//Take expensive sample
-					if (ldensity< .25){
+					if (ldensity< .17){
 						ldensity += sampleCloudDensity(lightPoint, weather, true, 0);
 					}
 					//Cheap sample
@@ -270,12 +271,12 @@ void main() {
 			vec3 cColor = vec3( 1.0, 1.0, 1.0 ); //base white cloud color - will probably need to change this up
 		    alpha = (1.0-colorSum.w)*alpha;
 		    colorSum += vec4(cColor*alpha, alpha);
+		    //colorSum.rgb *=m_AmbientColor;
 
 			float beers = exp(-ldensity);
 			float pSug = 1.0 - exp(-ldensity * 2.0);
 			float e = 2.0 * beers * pSug *phase;//try with and without phase
-			//TODO mix in ambient color samples from bottom and top parts of the sky color
-			lightSum += e *alpha;
+			lightSum +=  e *alpha;
 		}
 		//Sample the cloud density the cheap way
 		else{
@@ -287,12 +288,19 @@ void main() {
 	}
 
     vec4 lightEnergy = vec4(1.0 - lightSum, 1);
+   lightEnergy *= pow(texture(m_SkyColor, fpPos), vec4(.33));
 
+    //colorSum *= pow(texture(m_SkyColor, fpPos), vec4(1));
     //Blend option 1 - just blend the light energy without the background
     vec4 finalColor = mix( colorSum, lightEnergy , colorSum.w);
 
     //Blend option 2 - scale all the light energy by some constants - better for blending in other sky colors
     //vec4 finalColor = mix( colorSum, lightEnergy, .5);
+
+    //Blend in sky color, ambient and sun colors
+    finalColor.rgb *=pow(m_AmbientColor + m_SunColor, vec3(.33));	//TODO calculate ambient colors
+    //finalColor.rgb *=pow(texture(m_SkyColor, fpPos).rgb, vec3(.35));
+
 
     gl_FragColor = finalColor;//;// finalColor;
 }

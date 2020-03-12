@@ -11,7 +11,9 @@ MaterialDef Clouds {
         Float CloudsFrom
         Float CloudsTo
         
+        Texture2D SkyColor
         Vector3 SunColor
+        Vector3 AmbientColor
         
         Vector3 CameraDir
         Vector3 LightDir

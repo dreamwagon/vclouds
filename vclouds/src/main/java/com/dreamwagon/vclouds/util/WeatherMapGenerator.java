@@ -37,6 +37,11 @@ public class WeatherMapGenerator {
 	
 	static String FILE_PATH = "C:\\Users\\j_000\\Documents\\jmonkey-projects\\tests\\lowFreqNoise\\WORKING3\\";
 	
+	public static void main(String[] args) {
+		
+		generateWeatherTexure(1024, "Weather");
+	}
+	
 	public static void generateWeatherTexure(int size, String fileName) {
 		
 		

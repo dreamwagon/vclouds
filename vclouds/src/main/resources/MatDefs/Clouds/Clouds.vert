@@ -16,6 +16,7 @@ varying vec3 norm;
 varying vec2 texCoord;
 
 out vec3 pos;
+out vec2 fpPos;
 
 void main() {
 
@@ -25,7 +26,8 @@ void main() {
     vec3 v = vec3(inTexCoord.x, inTexCoord.y, -1.0)*mat3(g_ViewMatrix);
 
 	pos = normalize(v.xyz);
- 	    
+ 	fpPos = inPosition.xy*0.5+0.5;
+ 	
     gl_Position = vec4(inPosition.xy, 1.0, 1.0);
     
 }

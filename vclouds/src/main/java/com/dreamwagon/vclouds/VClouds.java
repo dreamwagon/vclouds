@@ -2,7 +2,6 @@ package com.dreamwagon.vclouds;
 
 import java.util.Random;
 
-import com.dreamwagon.vclouds.render.TextureRenderer;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
@@ -30,9 +29,9 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.Type;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
+import com.jme3.texture.image.ImageRaster;
 
 /**
- * 
  * @author J. Demarco
  *
  */
@@ -49,6 +48,7 @@ public class VClouds implements SceneProcessor{
 	public float MIE_SCALE_HEIGHT =1200f;
     
 	public Vector3f sunColor = new Vector3f(1f, 1f, .874f);	
+	public Vector3f ambientColor = new Vector3f(.45f, .9f, 1f);	
 	public Geometry applyQuad;
 	
 	private Material skyMaterial;
@@ -63,6 +63,7 @@ public class VClouds implements SceneProcessor{
 	
 	boolean init = false;
 	
+	ImageRaster skyImageRaster;
 	private Texture2D skyViewTexture;
 	private FrameBuffer skyViewFrameBuffer;
 	private FrameBuffer boundRefFrameBuffer;
@@ -70,18 +71,24 @@ public class VClouds implements SceneProcessor{
 	public VClouds(AssetManager assetManager, Camera cam) {
 
 		this.cam = cam;
-		
-		int viewW = cam.getWidth();
-		int viewH = cam.getHeight();	
+		//Frame buffer scalar - decreasing the scale of the frame buffer increases performance at a loss of quality
+		//setting to half size seems to be about right
+		int frameBufferScalar = 2;
+				
+		int viewW = cam.getWidth()/frameBufferScalar;
+		int viewH = cam.getHeight()/frameBufferScalar;	
 
 		Image.Format fmt = Image.Format.RGBA32F;
+		
 		skyViewFrameBuffer = new FrameBuffer(viewW, viewH, 1);
 
 		skyViewTexture = new Texture2D(viewW, viewH, fmt);
 		skyViewTexture.setMinFilter(Texture.MinFilter.BilinearNearestMipMap);
 		skyViewTexture.setMagFilter(Texture.MagFilter.Bilinear);
-		skyViewTexture.getImage().setMipMapSizes(new int[]{0, 1});
+		skyViewTexture.getImage().setMipMapSizes(new int[]{0, 1});  	
 		skyViewFrameBuffer.setColorTexture(skyViewTexture);
+		
+		skyImageRaster =  ImageRaster.create(skyViewTexture.getImage());
 		
 		applyQuad = createFullScreenQuad(0.99999f);
 		Material applyMat = new Material(assetManager, "MatDefs/SkyRender/SkyApply.j3md");
@@ -204,6 +211,11 @@ public class VClouds implements SceneProcessor{
         cloudMaterial.setFloat("DetailedEdgeThreshold", .17f);
         
         cloudMaterial.setVector3("SunColor", sunColor);
+        
+        cloudMaterial.setVector3("AmbientColor", ambientColor);
+        
+        cloudMaterial.setTexture("SkyColor", skyViewTexture);
+       
     }
 
     public void setLightDir(Vector3f lightDir) {
@@ -215,10 +227,16 @@ public class VClouds implements SceneProcessor{
     	cloudMaterial.setFloat("CloudCoverage", cloudCoverage);
     }
     
+    
 	public void renderView() {
 			
 		//Sky renderer is a hog!
 		skyMaterial.render(skyGeometry, rm);
+		if (skyViewTexture.getImage().getData(0) != null) {
+		ColorRGBA skyAmbColor = skyImageRaster.getPixel(0,0);//(skyViewTexture.getImage().getHeight() /2, skyViewTexture.getImage().getWidth() /2);
+		cloudMaterial.setVector3("AmbientColor", skyAmbColor.toVector3f());
+		System.out.println("amb");
+		}
 		cloudMaterial.render(cloudGeometry, rm);
 	}
 	
@@ -306,16 +324,6 @@ public class VClouds implements SceneProcessor{
     
 	public static RenderContext getRenderContext(Renderer r) {
 		return read(r, "context");
-	}
-	
-	
-	public static TextureRenderer createRenderer(int size) {
-		Texture2D tex = new Texture2D(size, size, Image.Format.RGBA8);
-		tex.setMinFilter(Texture.MinFilter.BilinearNearestMipMap);
-		tex.setMagFilter(Texture.MagFilter.Bilinear);
-//		tex.setWrap(Texture.WrapMode.MirroredRepeat);
-		tex.setWrap(Texture.WrapMode.Repeat);
-		return new TextureRenderer(tex, false);
 	}
 	
 	public static Geometry createFullScreenQuad(float z) {
